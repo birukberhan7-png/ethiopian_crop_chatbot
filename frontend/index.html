@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌿 Ethiopian Crop Recommendation Chatbot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+Ethiopic:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Vars ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-900: #1a3a1a;
+      --green-800: #1e4d1e;
+      --green-700: #276427;
+      --green-600: #2e7d32;
+      --green-500: #388e3c;
+      --green-400: #4caf50;
+      --green-100: #e8f5e9;
+      --green-50:  #f1f8e9;
+      --gold:      #f9a825;
+      --red-eth:   #d32f2f;
+      --bg:        #f5f7f2;
+      --surface:   #ffffff;
+      --border:    #dce8dc;
+      --text:      #1a2e1a;
+      --muted:     #5a7a5a;
+      --shadow:    0 2px 12px rgba(0,0,0,.10);
+      --radius:    16px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ──────────────────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, var(--green-800) 0%, var(--green-600) 60%, #1b5e20 100%);
+      color: #fff;
+      padding: 0 20px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,.15);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .header-title h1 { font-size: 16px; font-weight: 700; letter-spacing: .3px; }
+    .header-title p  { font-size: 11px; opacity: .75; margin-top: 1px; }
+
+    .eth-flag {
+      display: flex; border-radius: 4px; overflow: hidden;
+      height: 20px; width: 36px; flex-shrink: 0;
+    }
+    .eth-flag span { flex: 1; }
+
+    .status-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.12);
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 500;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #4caf50;
+           box-shadow: 0 0 6px #4caf50; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+    /* ── Layout ──────────────────────────────────────────────────── */
+    .app {
+      display: flex; flex: 1; overflow: hidden;
+    }
+
+    /* ── Sidebar ─────────────────────────────────────────────────── */
+    .sidebar {
+      width: 260px; flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow-y: auto;
+      padding: 16px 12px;
+      gap: 8px;
+    }
+    .sidebar-section { margin-bottom: 8px; }
+    .sidebar-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .8px;
+      color: var(--muted); text-transform: uppercase;
+      padding: 0 8px 6px;
+    }
+    .quick-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 10px;
+      border: none; background: none; width: 100%;
+      text-align: left; cursor: pointer;
+      font-size: 13px; color: var(--text);
+      transition: background .15s;
+    }
+    .quick-btn:hover { background: var(--green-100); color: var(--green-700); }
+    .quick-btn .icon { font-size: 16px; width: 24px; text-align: center; }
+
+    .crop-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0; }
+    .chip {
+      padding: 4px 10px; border-radius: 20px;
+      background: var(--green-100); color: var(--green-700);
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      border: 1px solid var(--border);
+      transition: all .15s;
+    }
+    .chip:hover { background: var(--green-500); color: #fff; border-color: var(--green-500); }
+
+    /* ── Chat Area ───────────────────────────────────────────────── */
+    .chat-area {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
+      background: var(--bg);
+    }
+
+    .messages {
+      flex: 1; overflow-y: auto; padding: 20px 20px 8px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .messages::-webkit-scrollbar { width: 6px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── Message Bubbles ─────────────────────────────────────────── */
+    .msg { display: flex; gap: 10px; max-width: 820px; }
+    .msg.user { flex-direction: row-reverse; align-self: flex-end; }
+    .msg.bot  { align-self: flex-start; }
+
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700;
+    }
+    .msg.bot  .avatar { background: var(--green-600); color: #fff; }
+    .msg.user .avatar { background: var(--gold); color: var(--green-900); }
+
+    .bubble {
+      padding: 12px 16px; border-radius: var(--radius);
+      font-size: 14px; line-height: 1.6;
+      max-width: calc(100% - 50px);
+      box-shadow: var(--shadow);
+    }
+    .msg.bot  .bubble {
+      background: var(--surface);
+      border-top-left-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    .msg.user .bubble {
+      background: var(--green-600);
+      color: #fff;
+      border-top-right-radius: 4px;
+    }
+
+    /* ── Markdown inside bubbles ─────────────────────────────────── */
+    .bubble h2 { font-size: 15px; color: var(--green-700); margin-bottom: 8px; }
+    .bubble h3 { font-size: 13px; color: var(--green-700); margin: 10px 0 4px; }
+    .bubble strong { color: var(--green-800); }
+    .msg.user .bubble strong { color: #fff; }
+    .bubble ul, .bubble ol { padding-left: 18px; margin: 4px 0; }
+    .bubble li { margin: 2px 0; }
+    .bubble table {
+      border-collapse: collapse; font-size: 12px; margin: 6px 0; width: 100%;
+    }
+    .bubble table th, .bubble table td {
+      border: 1px solid var(--border); padding: 5px 10px; text-align: left;
+    }
+    .bubble table th { background: var(--green-100); font-weight: 600; }
+    .bubble hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+    .bubble em { color: var(--muted); font-style: italic; }
+    .bubble code { background: var(--green-50); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+
+    /* Progress bar */
+    .progress-bar {
+      font-family: monospace; letter-spacing: 2px;
+      color: var(--green-600); font-weight: 700;
+    }
+
+    /* ── Typing indicator ────────────────────────────────────────── */
+    .typing {
+      display: flex; align-items: center; gap: 4px;
+      padding: 12px 16px; background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius); border-top-left-radius: 4px;
+      width: fit-content; box-shadow: var(--shadow);
+    }
+    .typing span {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--green-400);
+      animation: bounce .9s infinite;
+    }
+    .typing span:nth-child(2) { animation-delay: .15s; }
+    .typing span:nth-child(3) { animation-delay: .30s; }
+    @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-8px)} }
+
+    /* ── Input Bar ───────────────────────────────────────────────── */
+    .input-bar {
+      padding: 12px 16px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex; gap: 10px; align-items: flex-end;
+    }
+    .input-wrap { flex: 1; position: relative; }
+    #msg-input {
+      width: 100%; border: 2px solid var(--border);
+      border-radius: 12px; padding: 10px 14px;
+      font-size: 14px; font-family: inherit;
+      resize: none; max-height: 120px; min-height: 44px;
+      outline: none; transition: border-color .2s;
+      background: var(--bg); color: var(--text);
+      line-height: 1.4;
+    }
+    #msg-input:focus { border-color: var(--green-500); background: var(--surface); }
+    #msg-input::placeholder { color: #aaa; }
+
+    #send-btn {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--green-600); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, transform .1s;
+      flex-shrink: 0;
+    }
+    #send-btn:hover  { background: var(--green-700); }
+    #send-btn:active { transform: scale(.95); }
+    #send-btn svg { width: 20px; height: 20px; fill: #fff; }
+
+    /* ── Welcome banner ──────────────────────────────────────────── */
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--green-50) 0%, #fff 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      text-align: center; margin: 10px;
+    }
+    .welcome-banner .logo-big { font-size: 48px; margin-bottom: 8px; }
+    .welcome-banner h2 { color: var(--green-700); font-size: 18px; }
+    .welcome-banner p  { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+    /* ── Responsive ──────────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .sidebar { display: none; }
+      .messages { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────────────────────── -->
+<header>
+  <div class="header-left">
+    <div class="logo-icon">🌿</div>
+    <div class="header-title">
+      <h1>Ethiopian Crop Recommendation AI</h1>
+      <p>ኢትዮጵያ — Endemic Plant Intelligence System</p>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="eth-flag">
+      <span style="background:#078930"></span>
+      <span style="background:#FCDD09"></span>
+      <span style="background:#DA121A"></span>
+    </div>
+    <div class="status-badge"><span class="dot"></span>Online</div>
+  </div>
+</header>
+
+<!-- ── App Layout ─────────────────────────────────────────────────────────── -->
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Quick Actions</div>
+      <button class="quick-btn" onclick="send('Recommend a crop for my land')">
+        <span class="icon">🔍</span> Get Crop Recommendation
+      </button>
+      <button class="quick-btn" onclick="send('What crops grow in Oromia?')">
+        <span class="icon">📍</span> Oromia Region Crops
+      </button>
+      <button class="quick-btn" onclick="send('What crops grow in Amhara?')">
+        <span class="icon">📍</span> Amhara Region Crops
+      </button>
+      <button class="quick-btn" onclick="send('What crops grow in Tigray?')">
+        <span class="icon">📍</span> Tigray Region Crops
+      </button>
+      <button class="quick-btn" onclick="send('General farming tips')">
+        <span class="icon">💡</span> Farming Tips
+      </button>
+      <button class="quick-btn" onclick="send('Best crop for altitude 2200m')">
+        <span class="icon">⛰️</span> Highland Crops (2200m)
+      </button>
+      <button class="quick-btn" onclick="send('Best crop for altitude 900m')">
+        <span class="icon">🌾</span> Lowland Crops (900m)
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Explore Crops</div>
+      <div class="crop-chips">
+        <span class="chip" onclick="send('Tell me about Teff')">Teff</span>
+        <span class="chip" onclick="send('Tell me about Enset')">Enset</span>
+        <span class="chip" onclick="send('Tell me about Coffee')">Coffee</span>
+        <span class="chip" onclick="send('Tell me about Barley')">Barley</span>
+        <span class="chip" onclick="send('Tell me about Sorghum')">Sorghum</span>
+        <span class="chip" onclick="send('Tell me about Noug')">Noug</span>
+        <span class="chip" onclick="send('Tell me about Chickpea')">Chickpea</span>
+        <span class="chip" onclick="send('Tell me about Linseed')">Linseed</span>
+        <span class="chip" onclick="send('Tell me about Finger Millet')">Finger Millet</span>
+        <span class="chip" onclick="send('Tell me about Maize')">Maize</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Sample Data Entry</div>
+      <button class="quick-btn" onclick="sampleHighland()">
+        <span class="icon">🏔️</span> Highland Sample
+      </button>
+      <button class="quick-btn" onclick="sampleLowland()">
+        <span class="icon">🏜️</span> Lowland Sample
+      </button>
+      <button class="quick-btn" onclick="sampleCoffee()">
+        <span class="icon">☕</span> Coffee Zone Sample
+      </button>
+    </div>
+  </aside>
+
+  <!-- Chat -->
+  <main class="chat-area">
+    <div class="messages" id="messages">
+      <div class="welcome-banner">
+        <div class="logo-big">🌿</div>
+        <h2>AI Crop Recommendation Chatbot</h2>
+        <p>Ask me about Ethiopian endemic crops, or get a personalized AI-powered recommendation!</p>
+      </div>
+    </div>
+
+    <div class="input-bar">
+      <div class="input-wrap">
+        <textarea id="msg-input"
+          placeholder="Ask about crops, regions, or say 'recommend a crop'…"
+          rows="1"
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+      </div>
+      <button id="send-btn" onclick="sendInput()" title="Send">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+const API_URL    = "/api/chat";
+let   SESSION_ID = crypto.randomUUID?.() ?? Math.random().toString(36).slice(2);
+
+// ── Markdown parser (lightweight) ────────────────────────────────────────────
+function md(text) {
+  return text
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    // Tables (basic)
+    .replace(/^\|(.+)\|\s*$/gm, (row) => {
+      if (row.includes("---")) return "";
+      const cells = row.split("|").filter((_, i, a) => i > 0 && i < a.length-1);
+      const tag = cells.some(c => c.includes("**")) ? "th" : "td";
+      return `<tr>${cells.map(c => `<${tag}>${mdInline(c.trim())}</${tag}>`).join("")}</tr>`;
+    })
+    .replace(/(<tr>[\s\S]*?<\/tr>)/g, m => `<table>${m}</table>`)
+    // Headings
+    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+    // HR
+    .replace(/^---$/gm, "<hr>")
+    // List items
+    .replace(/^[-*] (.+)$/gm, "<li>$1</li>")
+    .replace(/(<li>[\s\S]*?<\/li>)/g, m => `<ul>${m}</ul>`)
+    // Numbered list
+    .replace(/^\d+\. (.+)$/gm, "<li>$1</li>")
+    // Progress bar (monospace)
+    .replace(/(\[([▓░]+)\] \d+\/\d+ \w+)/g, '<span class="progress-bar">$1</span>')
+    // Inline
+    .split("\n").map(line => {
+      if (line.startsWith("<")) return line;
+      return "<p>" + mdInline(line) + "</p>";
+    }).join("")
+    .replace(/<p><\/p>/g, "")
+    .replace(/<p>(<h[23]>)/g, "$1")
+    .replace(/(<\/h[23]>)<\/p>/g, "$1");
+}
+
+function mdInline(text) {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/`(.+?)`/g, "<code>$1</code>");
+}
+
+// ── DOM helpers ───────────────────────────────────────────────────────────────
+function addMsg(role, text) {
+  const msgs  = document.getElementById("messages");
+  const div   = document.createElement("div");
+  div.className = `msg ${role}`;
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.textContent = role === "bot" ? "🌿" : "👤";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  if (role === "bot") {
+    bubble.innerHTML = md(text);
+  } else {
+    bubble.textContent = text;
+  }
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function showTyping() {
+  const msgs = document.getElementById("messages");
+  const div  = document.createElement("div");
+  div.className = "msg bot";
+  div.id = "typing-indicator";
+  div.innerHTML = `
+    <div class="avatar">🌿</div>
+    <div class="typing"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+function hideTyping() {
+  document.getElementById("typing-indicator")?.remove();
+}
+
+// ── Send message ──────────────────────────────────────────────────────────────
+async function send(text) {
+  if (!text.trim()) return;
+  addMsg("user", text);
+
+  showTyping();
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, session_id: SESSION_ID })
+    });
+    const data = await res.json();
+    hideTyping();
+    addMsg("bot", data.reply || data.error || "Sorry, I could not process that.");
+  } catch (err) {
+    hideTyping();
+    addMsg("bot", "⚠️ Could not connect to the server. Make sure the Flask backend is running on port 5000.");
+  }
+}
+
+function sendInput() {
+  const inp = document.getElementById("msg-input");
+  const val = inp.value.trim();
+  if (!val) return;
+  inp.value = "";
+  inp.style.height = "44px";
+  send(val);
+}
+
+function handleKey(e) {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendInput(); }
+}
+
+function autoResize(el) {
+  el.style.height = "44px";
+  el.style.height = Math.min(el.scrollHeight, 120) + "px";
+}
+
+// ── Sample inputs ─────────────────────────────────────────────────────────────
+function sampleHighland() {
+  send("Recommend a crop. temperature 19, humidity 65, rainfall 780mm, ph 6.2, altitude 2400m, soil Loam, nitrogen 90, phosphorus 50, potassium 40");
+}
+function sampleLowland() {
+  send("Recommend a crop. temperature 32, humidity 40, rainfall 450mm, ph 6.8, altitude 800m, soil Sandy, nitrogen 45, phosphorus 25, potassium 30");
+}
+function sampleCoffee() {
+  send("Recommend a crop. temperature 22, humidity 75, rainfall 1400mm, ph 6.0, altitude 1800m, soil Red Soil, nitrogen 85, phosphorus 55, potassium 60, region Oromia");
+}
+
+// ── Boot greeting ─────────────────────────────────────────────────────────────
+window.onload = () => {
+  send("hello");
+};
+</script>
+</body>
+</html>

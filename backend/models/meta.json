@@ -1,0 +1,45 @@
+{
+  "features": [
+    "Temperature_C",
+    "Humidity_%",
+    "Rainfall_mm",
+    "pH",
+    "Altitude_m",
+    "Nitrogen",
+    "Phosphorus",
+    "Potassium",
+    "Soil_Encoded",
+    "Region_Encoded"
+  ],
+  "soil_types": [
+    "Black Soil",
+    "Clay",
+    "Loam",
+    "Red Soil",
+    "Sandy",
+    "Silty"
+  ],
+  "regions": [
+    "Afar",
+    "Amhara",
+    "Benishangul-Gumuz",
+    "Oromia",
+    "SNNPR",
+    "Sidama",
+    "Somali",
+    "Tigray"
+  ],
+  "crops": [
+    "Barley",
+    "Chickpea",
+    "Coffee Arabica",
+    "Enset",
+    "Finger Millet",
+    "Linseed",
+    "Maize",
+    "Noug",
+    "Sorghum",
+    "Teff"
+  ],
+  "accuracy": 68.33
+}
