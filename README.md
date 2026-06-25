@@ -250,4 +250,3 @@ For issues or questions, check that:
 3. Model is trained: run `python ml/train_model.py`
 4. Server is running: `python app.py`
 5. Browser points to: `http://localhost:5000`
-alta
